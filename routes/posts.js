@@ -16,7 +16,14 @@ router.post('/', checkLogin, function(req, res, next) {
 
 // GET /posts/create 发表文章页
 router.get('/create', checkLogin, function(req, res, next) {
-  res.send(req.flash());
+  var Post = require('../lib/mongo').Post;
+
+  module.exports = {
+    // 创建一篇文章
+    create: function create(post) {
+      return Post.create(post).exec();
+    }
+  };
 });
 
 // GET /posts/:postId 单独一篇的文章页
