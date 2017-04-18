@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var PostModel = require('../models/posts');
+var CommentModel = require('../models/comments');
 
 var checkLogin = require('../middlewares/check').checkLogin;
 
@@ -8,7 +9,6 @@ var checkLogin = require('../middlewares/check').checkLogin;
 //   eg: GET /posts?author=xxx
 router.get('/', function(req, res, next) {
   var author = req.query.author;
-
   PostModel.getPosts(author)
     .then(function (posts) {
       res.render('posts', {
@@ -67,16 +67,20 @@ router.get('/:postId', function(req, res, next) {
   var postId = req.params.postId;
   Promise.all([
      PostModel.getPostById(postId),// 获取文章信息
+     CommentModel.getComments(postId),// 获取该文章所有留言
      PostModel.incPv(postId)// pv 加 1
    ])
    .then(function (result) {
      var post = result[0];
+     var comments = result[1];
+     console.log('Promise-resutl',JSON.stringify(result));
      if (!post) {
        throw new Error('该文章不存在');
      }
 
      res.render('post', {
-       post: post
+       post: post,
+       comments:comments
      });
    })
    .catch(next);
@@ -101,6 +105,7 @@ router.get('/:postId/edit', checkLogin, function(req, res, next) {
       });
     })
     .catch(next);
+
 });
 
 // POST /posts/:postId/edit 更新一篇文章

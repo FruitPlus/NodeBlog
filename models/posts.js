@@ -1,5 +1,6 @@
 var Post = require('../lib/mongo').Post;
 var marked = require('marked');
+var CommentModel = require('./comments');
 
 // 将 post 的 content 从 markdown 转换成 html
 Post.plugin('contentToHtml', {
@@ -17,6 +18,26 @@ Post.plugin('contentToHtml', {
   }
 });
 
+// 给 post 添加留言数 commentsCount
+Post.plugin('addCommentsCount', {
+  afterFind: function (posts) {
+    return Promise.all(posts.map(function (post) {
+      return CommentModel.getCommentsCount(post._id).then(function (commentsCount) {
+        post.commentsCount = commentsCount;
+        return post;
+      });
+    }));
+  },
+  afterFindOne: function (post) {
+    if (post) {
+      return CommentModel.getCommentsCount(post._id).then(function (count) {
+        post.commentsCount = count;
+        return post;
+      });
+    }
+    return post;
+  }
+});
 
 
 module.exports = {
@@ -26,10 +47,12 @@ module.exports = {
   },
   // 通过文章 id 获取一篇文章
   getPostById: function getPostById(postId) {
+    console.log('postId',postId);
     return Post
       .findOne({ _id: postId })
       .populate({ path: 'author', model: 'User' })
       .addCreatedAt()
+      .addCommentsCount()
       .contentToHtml()//查找到之后经过处理转换成html,记得在模板引擎中　不直接使用字符串的渲染．．而应该使用html
       .exec(function(err,Post){
         //populate的意思是　通过指定模型的外键填充内容．path:是要填充模型的外键,model是指要填充模型的路径
@@ -38,18 +61,21 @@ module.exports = {
   },
   // 按创建时间降序获取所有用户文章或者某个特定用户的所有文章
   getPosts: function getPosts(author) {
+
     var query = {};
     if (author) {
       query.author = author;
     }
+
     return Post
       .find(query)
       .populate({ path: 'author', model: 'User' })
       .sort({ _id: -1 })
       .addCreatedAt()
+      .addCommentsCount()
       .contentToHtml()
       .exec(function(err,Post){
-        console.log('This is posts',Post);
+         console.log('This post is',JSON.stringify(Post))
         if (err) return handleError(err);
       });
   },
