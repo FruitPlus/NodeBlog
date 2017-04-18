@@ -142,7 +142,23 @@ router.get('/:postId/remove', checkLogin, function(req, res, next) {
 
 // POST /posts/:postId/comment 创建一条留言
 router.post('/:postId/comment', checkLogin, function(req, res, next) {
-  res.send(req.flash());
+  var content = req.fields.content
+  var author = req.session.user._id;
+  var postId = req.params.postId;
+  var comment = {
+    author: author,
+    postId: postId,
+    content: content,
+  };
+
+  CommentModel.create(comment)
+    .then(function(result){
+      post = result.ops[0];
+
+      res.redirect(`/posts/${post.postId}`);
+       
+    })
+    .catch(next);
 });
 
 // GET /posts/:postId/comment/:commentId/remove 删除一条留言
