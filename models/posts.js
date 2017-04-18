@@ -30,7 +30,7 @@ module.exports = {
       .findOne({ _id: postId })
       .populate({ path: 'author', model: 'User' })
       .addCreatedAt()
-      .contentToHtml()
+      .contentToHtml()//查找到之后经过处理转换成html,记得在模板引擎中　不直接使用字符串的渲染．．而应该使用html
       .exec(function(err,Post){
         //populate的意思是　通过指定模型的外键填充内容．path:是要填充模型的外键,model是指要填充模型的路径
         console.log('This post is',JSON.stringify(Post))
@@ -49,6 +49,7 @@ module.exports = {
       .addCreatedAt()
       .contentToHtml()
       .exec(function(err,Post){
+        console.log('This is posts',Post);
         if (err) return handleError(err);
       });
   },
@@ -65,7 +66,9 @@ module.exports = {
     return Post
       .findOne({ _id: postId })
       .populate({ path: 'author', model: 'User' })
-      .exec();
+      .exec(function(err,post){
+        console.log('This.is post',JSON.stringify(post))
+      });
   },
 
   // 通过用户 id 和文章 id 更新一篇文章
