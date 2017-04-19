@@ -9,6 +9,7 @@ var checkLogin = require('../middlewares/check').checkLogin;
 //   eg: GET /posts?author=xxx
 router.get('/', function(req, res, next) {
   var author = req.query.author;
+  console.log('headersSent',res.headersSent)
   PostModel.getPosts(author)
     .then(function (posts) {
       res.render('posts', {
