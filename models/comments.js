@@ -21,7 +21,7 @@ module.exports = {
   delCommentById: function delCommentById(commentId, author) {
     return Comment.remove({ author: author, _id: commentId })
     			  .exec(function(err,comment){
-    			  	console.log('removOneComment',comment);
+    			  	
     			});
   },
 
@@ -38,7 +38,7 @@ module.exports = {
       .sort({ _id: 1 })
       .addCreatedAt()
       .contentToHtml()
-      .exec();
+      .exec();	
   },
 
   // 通过文章 id 获取该文章下留言数

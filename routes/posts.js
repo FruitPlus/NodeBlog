@@ -154,7 +154,6 @@ router.post('/:postId/comment', checkLogin, function(req, res, next) {
   CommentModel.create(comment)
     .then(function(result){
       post = result.ops[0];
-
       res.redirect(`/posts/${post.postId}`);
        
     })
@@ -163,7 +162,19 @@ router.post('/:postId/comment', checkLogin, function(req, res, next) {
 
 // GET /posts/:postId/comment/:commentId/remove 删除一条留言
 router.get('/:postId/comment/:commentId/remove', checkLogin, function(req, res, next) {
-  res.send(req.flash());
+
+  var author = req.session.user._id;
+  var commentId = req.params.commentId;
+  var postId = req.params.postId;
+
+  CommentModel.delCommentById(commentId,author)
+    .then(function(comment){
+      if(comment.result.ok==1){
+        req.flash('success', '删除留言成功');
+        res.redirect(`/posts/${postId}`);
+      }
+    })
+    .catch(next)
 });
 
 module.exports = router;
